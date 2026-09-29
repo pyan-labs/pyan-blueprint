@@ -14,7 +14,7 @@ import { getAllTables, getTableSchema } from "./queries/tables.js";
 import { getRelationships } from "./queries/relationships.js";
 import { getIndexes } from "./queries/indexes.js";
 import { getStoredProcedures } from "./queries/stored-procedures.js";
-import { getSampleData, runSelectQuery } from "./queries/data.js";
+import { executeSql, getSampleData, runSelectQuery } from "./queries/data.js";
 
 // ── Shared helpers ───────────────────────────────────────────────────────────
 
@@ -218,6 +218,23 @@ export function registerTools(server: McpServer) {
       const guard = configGuard();
       if (guard) return guard;
       const result = await runSelectQuery(querySql, env);
+      return jsonResponse({ env: env ?? getOpenEnv(), ...result });
+    }
+  );
+
+  tool(
+    "execute_sql",
+    "Execute any T-SQL (DDL, DML, EXEC) on a writable environment (\"readonly\": false, e.g. dev). " +
+      "Rejected on readonly environments. GO separators are not supported. Each result set is capped at 1000 rows. " +
+      "Confirm destructive statements (DROP, DELETE, TRUNCATE, ...) with the user before running.",
+    {
+      sql: z.string().describe("T-SQL batch to execute."),
+      ...OptionalEnvSchema,
+    },
+    async ({ sql: querySql, env }: { sql: string; env?: string }) => {
+      const guard = configGuard();
+      if (guard) return guard;
+      const result = await executeSql(querySql, env);
       return jsonResponse({ env: env ?? getOpenEnv(), ...result });
     }
   );

@@ -9,6 +9,7 @@ import type {
   ConnectionListItem,
   ConfigLocation,
 } from "./types.js";
+import { assertReadonlyAccount, isReadonlyEntry } from "./security.js";
 
 const CONFIG_FILE_NAME = ".db-fetcher.json";
 
@@ -217,6 +218,14 @@ export async function getPool(env?: string): Promise<sql.ConnectionPool> {
   const pool = new sql.ConnectionPool(sqlConfig);
 
   await pool.connect();
+  if (isReadonlyEntry(entry)) {
+    try {
+      await assertReadonlyAccount(pool, resolvedEnv);
+    } catch (err) {
+      await pool.close();
+      throw err;
+    }
+  }
   pools.set(resolvedEnv, pool);
 
   return pool;
@@ -239,7 +248,7 @@ export function listConnections(): ConnectionListItem[] {
       env: envName,
       server: entry.server,
       database: entry.database,
-      readonly: entry.readonly ?? false,
+      readonly: isReadonlyEntry(entry),
       is_open: envName === openEnv,
       available: true,
     });
@@ -250,7 +259,7 @@ export function listConnections(): ConnectionListItem[] {
 
 export function isReadonly(env?: string): boolean {
   const entry = getConnectionEntry(env);
-  return entry.readonly ?? false;
+  return isReadonlyEntry(entry);
 }
 
 export async function closeAll(): Promise<void> {

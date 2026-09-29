@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // 공유 esbuild 빌드 스크립트
-//   MCP 패키지:  node ../../build.mjs              → dist/index.js (기본값)
-//   Skill 패키지: node ../../../build.mjs scripts/index.js
+//   MCP 패키지:  node ../../../scripts/build.mjs            → dist/index.js (기본값)
+//   Skill 패키지: node ../../../../scripts/build.mjs scripts/index.js
 import { build } from 'esbuild';
 import { mkdir } from 'fs/promises';
 import { dirname } from 'path';

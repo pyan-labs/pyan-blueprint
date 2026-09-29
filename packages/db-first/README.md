@@ -67,7 +67,38 @@ Codex에서는 `pyan-blueprint` 마켓플레이스의 `db-first`를 사용자 �
 ```
 
 - `open`: 기본으로 사용할 환경 이름 (위 예시에서는 `dev`)
-- `prod` 환경은 `readonly: true`로 설정하여 실수로 데이터를 변경하는 것을 방지합니다
+- `readonly`: 생략하면 `true`입니다. 쓰기를 허용할 환경에만 `"readonly": false`를 명시합니다. 아래 "환경별 권한"을 참조하세요
+
+#### 환경별 권한
+
+| | `"readonly": false` (dev) | `readonly` 생략 또는 `true` (prod) |
+|---|---|---|
+| 스키마·데이터 조회 tool | 사용 가능 | 사용 가능 (`get_sample_data` 10행, `run_select_query` 1000행 제한) |
+| `execute_sql` (DDL·DML·EXEC 등 모든 T-SQL) | 사용 가능 | 거부 |
+| 연결 계정 | 제한 없음 (sa 가능) | **쓰기 권한이 없는 계정만** 연결 허용 |
+
+prod는 두 겹으로 막습니다.
+
+1. **DB 계정 권한 (실제 차단).** readonly 환경에 연결하면 서버가 먼저 계정 권한을 확인합니다. DB 수준에서 `CONNECT`, `SELECT`, `SHOWPLAN`, `VIEW …` 외의 권한이 있거나, 테이블·뷰에 `INSERT`/`UPDATE`/`DELETE`/`ALTER` 권한이 있거나, 프로시저에 `EXECUTE`/`ALTER` 권한이 있으면 연결을 거부합니다. prod에 sa나 db_owner 계정을 넣으면 오류가 납니다.
+2. **MCP 서버 (실수 방지).** `run_select_query`는 SELECT만 받고 쓰기 키워드를 차단합니다. readonly 환경에서는 쿼리를 트랜잭션 안에서 실행하고 항상 롤백합니다. `execute_sql`은 readonly 환경에서 실행하지 않습니다.
+
+`.db-fetcher.json`은 누구나(에이전트 포함) 고칠 수 있는 파일입니다. 그러니 prod를 실제로 보호하는 것은 1번의 DB 계정 권한입니다. prod에는 아래처럼 조회 전용 계정을 만들어 씁니다.
+
+```sql
+-- Azure SQL Database (contained user). 대상 DB에서 실행
+CREATE USER mcp_reader WITH PASSWORD = '<STRONG_PASSWORD>';
+ALTER ROLE db_datareader ADD MEMBER mcp_reader;   -- 데이터 조회
+GRANT VIEW DEFINITION TO mcp_reader;               -- 스키마·SP 정의 조회
+
+-- SQL Server (login + user)
+-- CREATE LOGIN mcp_reader WITH PASSWORD = '<STRONG_PASSWORD>';
+-- USE <YOUR_DATABASE>;
+-- CREATE USER mcp_reader FOR LOGIN mcp_reader;
+-- ALTER ROLE db_datareader ADD MEMBER mcp_reader;
+-- GRANT VIEW DEFINITION TO mcp_reader;
+```
+
+> **주의:** 계정 검사는 연결한 DB 하나만 봅니다. 같은 로그인이 다른 DB나 서버 수준 권한을 갖지 않게 하세요. 기존 설정에서 dev에 `readonly`를 적지 않고 sa를 쓰고 있었다면, 이제 연결이 거부되므로 `"readonly": false`를 추가해야 합니다.
 
 #### 설정 파일 탐색 순서
 

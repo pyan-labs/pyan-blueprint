@@ -7,6 +7,7 @@ export interface ConnectionEntry {
   password?: string;
   encrypt?: boolean;
   trustServerCertificate?: boolean;
+  // 생략하면 true. 쓰기를 허용하려면 false를 명시한다.
   readonly?: boolean;
 }
 

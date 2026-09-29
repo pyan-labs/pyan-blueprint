@@ -10,7 +10,7 @@
     {
       "name": "db-first",
       "description": "MS SQL DB 스키마를 MCP로 읽어 EF Core, REST API, Frontend 코드를 자동 생성하는 3인 팀 개발 도구",
-      "version": "5.7.0",
+      "version": "1.0.0",
       "path": "db-first",
       "source": "./dist/db-first"
     }

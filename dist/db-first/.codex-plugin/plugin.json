@@ -1,6 +1,6 @@
 {
   "name": "db-first",
-  "version": "5.7.0",
+  "version": "1.0.0",
   "description": "프로젝트별 MS SQL 스키마를 읽어 EF Core 모델을 생성하는 DB-first 도구",
   "author": {
     "name": "Jay"

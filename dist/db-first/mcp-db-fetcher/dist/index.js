@@ -12176,17 +12176,17 @@ var require_bulk_load = __commonJS({
        * @private
        */
       getBulkInsertSql() {
-        let sql6 = "insert bulk " + this.table + "(";
+        let sql7 = "insert bulk " + this.table + "(";
         for (let i = 0, len = this.columns.length; i < len; i++) {
           const c = this.columns[i];
           if (i !== 0) {
-            sql6 += ", ";
+            sql7 += ", ";
           }
-          sql6 += "[" + c.name + "] " + c.type.declaration(c);
+          sql7 += "[" + c.name + "] " + c.type.declaration(c);
         }
-        sql6 += ")";
-        sql6 += this.getOptionsSql();
-        return sql6;
+        sql7 += ")";
+        sql7 += this.getOptionsSql();
+        return sql7;
       }
       /**
        * This is simply a helper utility function which returns a `CREATE TABLE SQL` statement based on the columns added to the bulkLoad object.
@@ -12200,19 +12200,19 @@ var require_bulk_load = __commonJS({
        * you'll need to use the same connection and execute your requests using [[Connection.execSqlBatch]] instead of [[Connection.execSql]]
        */
       getTableCreationSql() {
-        let sql6 = "CREATE TABLE " + this.table + "(\n";
+        let sql7 = "CREATE TABLE " + this.table + "(\n";
         for (let i = 0, len = this.columns.length; i < len; i++) {
           const c = this.columns[i];
           if (i !== 0) {
-            sql6 += ",\n";
+            sql7 += ",\n";
           }
-          sql6 += "[" + c.name + "] " + c.type.declaration(c);
+          sql7 += "[" + c.name + "] " + c.type.declaration(c);
           if (c.nullable !== void 0) {
-            sql6 += " " + (c.nullable ? "NULL" : "NOT NULL");
+            sql7 += " " + (c.nullable ? "NULL" : "NOT NULL");
           }
         }
-        sql6 += "\n)";
-        return sql6;
+        sql7 += "\n)";
+        return sql7;
       }
       /**
        * @private
@@ -98519,6 +98519,92 @@ import { readFileSync, existsSync, statSync } from "fs";
 import { homedir } from "os";
 import { join, dirname, resolve, isAbsolute } from "path";
 import { AsyncLocalStorage } from "node:async_hooks";
+
+// src/security.ts
+function isReadonlyEntry(entry) {
+  return entry.readonly !== false;
+}
+var ALLOWED_DATABASE_PERMISSIONS = /* @__PURE__ */ new Set(["CONNECT", "SELECT", "SHOWPLAN"]);
+function findWritePermissions(permissions) {
+  return permissions.filter((p) => !ALLOWED_DATABASE_PERMISSIONS.has(p) && !p.startsWith("VIEW "));
+}
+var OBJECT_WRITE_PERMISSIONS_SQL = `
+  SELECT TOP 20 QUOTENAME(s.name) + '.' + QUOTENAME(o.name) + ' ' + p.permission_name AS grant_desc
+  FROM sys.objects o
+  INNER JOIN sys.schemas s ON s.schema_id = o.schema_id
+  CROSS APPLY (VALUES ('INSERT'), ('UPDATE'), ('DELETE'), ('ALTER'), ('EXECUTE')) p(permission_name)
+  WHERE o.is_ms_shipped = 0
+    AND (
+      (o.type IN ('U', 'V') AND p.permission_name IN ('INSERT', 'UPDATE', 'DELETE', 'ALTER'))
+      OR (o.type = 'P' AND p.permission_name IN ('EXECUTE', 'ALTER'))
+    )
+    AND HAS_PERMS_BY_NAME(QUOTENAME(s.name) + '.' + QUOTENAME(o.name), 'OBJECT', p.permission_name) = 1
+`;
+async function assertReadonlyAccount(pool, env) {
+  const dbPerms = await pool.request().query("SELECT permission_name FROM fn_my_permissions(NULL, 'DATABASE')");
+  let found = findWritePermissions(dbPerms.recordset.map((r) => r.permission_name));
+  if (found.length === 0) {
+    const objectPerms = await pool.request().query(OBJECT_WRITE_PERMISSIONS_SQL);
+    found = objectPerms.recordset.map((r) => r.grant_desc);
+  }
+  if (found.length > 0) {
+    throw new Error(
+      `Environment "${env}" is readonly, but its account has write permissions: ${found.slice(0, 10).join(", ")}.
+Use an account with only db_datareader + VIEW DEFINITION, or set "readonly": false in .db-fetcher.json if this environment is meant to be writable.`
+    );
+  }
+}
+var FORBIDDEN_IN_SELECT = [
+  /\bINSERT\b/i,
+  /\bUPDATE\b/i,
+  /\bDELETE\b/i,
+  /\bMERGE\b/i,
+  /\bDROP\b/i,
+  /\bTRUNCATE\b/i,
+  /\bALTER\b/i,
+  /\bCREATE\b/i,
+  /\bEXEC\b/i,
+  /\bEXECUTE\b/i,
+  /\bINTO\b/i,
+  /\bGRANT\b/i,
+  /\bREVOKE\b/i,
+  /\bDENY\b/i,
+  /\bDBCC\b/i,
+  /\bBACKUP\b/i,
+  /\bRESTORE\b/i,
+  /\bKILL\b/i,
+  /\bSHUTDOWN\b/i,
+  /\bRECONFIGURE\b/i,
+  /\bCOMMIT\b/i,
+  /\bROLLBACK\b/i,
+  /\bWAITFOR\b/i,
+  /\bBULK\b/i,
+  /\bOPENROWSET\b/i,
+  /\bOPENQUERY\b/i,
+  /\bOPENDATASOURCE\b/i,
+  /\bXP_\w+/i,
+  /\bSP_\w+/i
+];
+function assertSelectOnly(querySql) {
+  const normalized = querySql.trim().toUpperCase();
+  if (!normalized.startsWith("SELECT") && !normalized.startsWith("WITH")) {
+    throw new Error(
+      "Only SELECT (or WITH...SELECT) queries are allowed. Use execute_sql on a writable environment for other statements."
+    );
+  }
+  for (const pattern of FORBIDDEN_IN_SELECT) {
+    if (pattern.test(querySql)) {
+      throw new Error(
+        `Forbidden keyword detected in query: ${pattern.source.replace(/\\b/g, "")}. Only pure SELECT queries are permitted.`
+      );
+    }
+  }
+}
+function quoteIdentifier(name) {
+  return `[${name.replace(/]/g, "]]")}]`;
+}
+
+// src/connection-manager.ts
 var CONFIG_FILE_NAME = ".db-fetcher.json";
 var pools = /* @__PURE__ */ new Map();
 var cached2 = null;
@@ -98663,6 +98749,14 @@ async function getPool(env) {
   const sqlConfig = buildSqlConfig(entry);
   const pool = new import_mssql.default.ConnectionPool(sqlConfig);
   await pool.connect();
+  if (isReadonlyEntry(entry)) {
+    try {
+      await assertReadonlyAccount(pool, resolvedEnv);
+    } catch (err) {
+      await pool.close();
+      throw err;
+    }
+  }
   pools.set(resolvedEnv, pool);
   return pool;
 }
@@ -98678,7 +98772,7 @@ function listConnections() {
       env: envName,
       server: entry.server,
       database: entry.database,
-      readonly: entry.readonly ?? false,
+      readonly: isReadonlyEntry(entry),
       is_open: envName === openEnv,
       available: true
     });
@@ -98687,7 +98781,7 @@ function listConnections() {
 }
 function isReadonly(env) {
   const entry = getConnectionEntry(env);
-  return entry.readonly ?? false;
+  return isReadonlyEntry(entry);
 }
 async function closeAll() {
   for (const pool of pools.values()) {
@@ -98905,23 +98999,30 @@ async function getStoredProcedures(schemaFilter, env) {
 }
 
 // src/queries/data.ts
+var import_mssql6 = __toESM(require_mssql(), 1);
+var EXECUTE_MAX_ROWS = 1e3;
 async function getSampleData(tableName, schemaName = "dbo", limit = 5, env) {
   const pool = await getPool(env);
   const readonly2 = isReadonly(env);
   const maxRows = readonly2 ? 10 : 50;
   const safeLimit = Math.min(limit, maxRows);
   const countResult = await pool.request().input("table", tableName).input("schema", schemaName).query(`
-    SELECT SUM(p.rows) AS row_count
+    SELECT s.name AS schema_name, t.name AS table_name, SUM(p.rows) AS row_count
     FROM sys.tables t
     INNER JOIN sys.schemas s ON t.schema_id = s.schema_id
     INNER JOIN sys.partitions p ON t.object_id = p.object_id
       AND p.index_id IN (0, 1)
     WHERE t.name = @table AND s.name = @schema
+    GROUP BY s.name, t.name
   `);
-  const totalRows = countResult.recordset[0]?.row_count ?? 0;
+  const table = countResult.recordset[0];
+  if (!table) {
+    throw new Error(`Table "${schemaName}.${tableName}" not found.`);
+  }
+  const totalRows = table.row_count ?? 0;
   const dataResult = await pool.request().query(`
     SELECT TOP ${safeLimit} *
-    FROM [${schemaName}].[${tableName}]
+    FROM ${quoteIdentifier(table.schema_name)}.${quoteIdentifier(table.table_name)}
   `);
   return {
     table_name: tableName,
@@ -98931,32 +99032,7 @@ async function getSampleData(tableName, schemaName = "dbo", limit = 5, env) {
   };
 }
 async function runSelectQuery(querySql, env) {
-  const normalized = querySql.trim().toUpperCase();
-  if (!normalized.startsWith("SELECT") && !normalized.startsWith("WITH")) {
-    throw new Error(
-      "Only SELECT (or WITH...SELECT) queries are allowed. No INSERT, UPDATE, DELETE, DROP, EXEC, etc."
-    );
-  }
-  const forbidden = [
-    /\bINSERT\b/i,
-    /\bUPDATE\b/i,
-    /\bDELETE\b/i,
-    /\bDROP\b/i,
-    /\bTRUNCATE\b/i,
-    /\bALTER\b/i,
-    /\bCREATE\b/i,
-    /\bEXEC\b/i,
-    /\bEXECUTE\b/i,
-    /\bXP_\w+/i,
-    /\bSP_\w+/i
-  ];
-  for (const pattern of forbidden) {
-    if (pattern.test(querySql)) {
-      throw new Error(
-        `Forbidden keyword detected in query. Only pure SELECT queries are permitted.`
-      );
-    }
-  }
+  assertSelectOnly(querySql);
   const readonly2 = isReadonly(env);
   let safeQuery = querySql;
   if (readonly2 && !/\bTOP\b/i.test(querySql) && !/\bFETCH\b/i.test(querySql)) {
@@ -98966,11 +99042,37 @@ async function runSelectQuery(querySql, env) {
     });
   }
   const pool = await getPool(env);
-  const result = await pool.request().query(safeQuery);
+  let rows;
+  if (readonly2) {
+    const tx = new import_mssql6.default.Transaction(pool);
+    await tx.begin();
+    try {
+      rows = (await new import_mssql6.default.Request(tx).query(safeQuery)).recordset;
+    } finally {
+      await tx.rollback().catch(() => void 0);
+    }
+  } else {
+    rows = (await pool.request().query(safeQuery)).recordset;
+  }
   return {
-    rows: result.recordset,
-    row_count: result.recordset.length,
+    rows,
+    row_count: rows.length,
     warning: readonly2 ? `Readonly environment. Results capped at 1000 rows.` : null
+  };
+}
+async function executeSql(querySql, env) {
+  if (isReadonly(env)) {
+    throw new Error(
+      `Environment "${env ?? getOpenEnv()}" is readonly. execute_sql runs only on environments with "readonly": false.`
+    );
+  }
+  const pool = await getPool(env);
+  const result = await pool.request().query(querySql);
+  const recordsets = result.recordsets ?? [];
+  return {
+    recordsets: recordsets.map((rs) => rs.slice(0, EXECUTE_MAX_ROWS)),
+    rows_affected: result.rowsAffected,
+    truncated: recordsets.some((rs) => rs.length > EXECUTE_MAX_ROWS)
   };
 }
 
@@ -99152,12 +99254,26 @@ function registerTools(server2) {
       return jsonResponse({ env: env ?? getOpenEnv(), ...result });
     }
   );
+  tool(
+    "execute_sql",
+    'Execute any T-SQL (DDL, DML, EXEC) on a writable environment ("readonly": false, e.g. dev). Rejected on readonly environments. GO separators are not supported. Each result set is capped at 1000 rows. Confirm destructive statements (DROP, DELETE, TRUNCATE, ...) with the user before running.',
+    {
+      sql: external_exports.string().describe("T-SQL batch to execute."),
+      ...OptionalEnvSchema
+    },
+    async ({ sql: querySql, env }) => {
+      const guard = configGuard();
+      if (guard) return guard;
+      const result = await executeSql(querySql, env);
+      return jsonResponse({ env: env ?? getOpenEnv(), ...result });
+    }
+  );
 }
 
 // src/index.ts
 var server = new McpServer({
   name: "db-fetcher",
-  version: "5.7.0"
+  version: "1.0.0"
 });
 registerTools(server);
 async function main() {

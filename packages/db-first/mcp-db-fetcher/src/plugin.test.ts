@@ -33,7 +33,7 @@ for (const host of ["claude", "codex"]) {
     try {
       await client.connect(transport);
       const names = (await client.listTools()).tools.map((tool) => tool.name);
-      assert.equal(names.length, 8);
+      assert.equal(names.length, 9);
       for (const index of [0, 1, 0]) {
         const args = host === "claude" && index === 0 ? {} : { project_dir: projects[index] };
         const result = await client.callTool({ name: "list_connections", arguments: args });

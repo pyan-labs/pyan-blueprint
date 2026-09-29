@@ -1,7 +1,7 @@
 {
   "name": "db-first",
   "description": "Database development toolkit for Claude Code",
-  "version": "5.7.0",
+  "version": "1.0.0",
   "author": {
     "name": "Jay"
   }

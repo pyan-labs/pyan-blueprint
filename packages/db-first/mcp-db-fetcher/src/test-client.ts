@@ -10,6 +10,7 @@
  *   tsx src/test-client.ts get_table_schema '{"env":"dev","table_name":"Users","schema_name":"dbo"}'
  *   tsx src/test-client.ts get_sample_data '{"env":"dev","table_name":"Users","schema_name":"dbo","limit":5}'
  *   tsx src/test-client.ts run_select_query '{"env":"dev","query":"SELECT TOP 3 * FROM dbo.Users"}'
+ *   tsx src/test-client.ts execute_sql '{"env":"dev","sql":"UPDATE dbo.Users SET Name = Name WHERE 1 = 0"}'
  */
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -35,6 +36,7 @@ if (!toolName) {
   console.error("  get_stored_procedures");
   console.error("  get_sample_data");
   console.error("  run_select_query");
+  console.error("  execute_sql");
   process.exit(1);
 }
 

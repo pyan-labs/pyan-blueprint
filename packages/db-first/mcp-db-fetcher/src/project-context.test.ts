@@ -27,7 +27,7 @@ test("Codex calls select per-project configs and reject missing or invalid proje
       const dir = join(root, name);
       mkdirSync(dir);
       if (name !== "empty") writeFileSync(join(dir, ".db-fetcher.json"), JSON.stringify({
-        connections: { open: "dev", dev: { server: "localhost", database: name } },
+        connections: { open: "dev", dev: { server: "localhost", database: name, readonly: false } },
       }));
       return dir;
     });

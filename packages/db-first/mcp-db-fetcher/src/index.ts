@@ -7,7 +7,7 @@ import { registerTools } from "./tools.js";
 
 const server = new McpServer({
   name: "db-fetcher",
-  version: "5.7.0",
+  version: "1.0.0",
 });
 
 registerTools(server);
