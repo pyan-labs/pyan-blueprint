@@ -6,6 +6,7 @@
 - `commit` 스킬: 현재 변경 내용을 저장소 형식에 맞는 메시지로 커밋 (수동 호출 전용)
 - `commit` 스킬이 Sonnet으로 실행되도록 전용 agent `committer` 추가 (`context: fork` + `agent: dev-kit:committer`). 스킬의 `model:`은 fork 시 무시돼 메인 모델로 실행되던 문제
 - dist 조립이 플러그인의 `agents/` 폴더를 복사. 구조 설명은 `docs/skill-agent-fork.md`
+- README에 플러그인 업데이트 절차 추가
 
 ## [1.0.0] - [Jay] - 2026-03-11
 

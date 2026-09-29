@@ -9,6 +9,12 @@ pyan 개발 팀이 공통으로 쓰는 스킬 모음입니다. MCP 서버 없이
 codex plugin add dev-kit@pyan-blueprint         # Codex CLI
 ```
 
+## 업데이트 (Claude Code)
+
+1. `/plugin marketplace update pyan-blueprint`를 실행합니다.
+2. 이어서 `/plugin update dev-kit@pyan-blueprint`를 실행합니다.
+3. 세션을 다시 시작하고 `/dev-kit:commit`을 실행합니다. subagent 표시가 `committer · Sonnet 5.5`로 나오면 성공입니다.
+
 ## Skills
 
 | Skill    | 호출 (Claude / Codex)            | 설명 |

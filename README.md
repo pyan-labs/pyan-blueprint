@@ -42,7 +42,19 @@ codex plugin add db-first@pyan-blueprint
 codex plugin add dev-kit@pyan-blueprint
 ```
 
-설치하면 db-fetcher가 MCP 서버로 자동 등록됩니다. 업데이트, 제거, 문제 해결 → [docs/plugin-marketplace.md](docs/plugin-marketplace.md)
+설치하면 db-fetcher가 MCP 서버로 자동 등록됩니다.
+
+### 업데이트
+
+Claude Code 대화창에서 마켓플레이스 목록을 먼저 갱신한 뒤 플러그인을 업데이트합니다.
+
+```
+/plugin marketplace update pyan-blueprint
+/plugin update db-first@pyan-blueprint
+/plugin update dev-kit@pyan-blueprint
+```
+
+업데이트한 뒤에는 세션을 다시 시작해야 반영됩니다. 제거, 문제 해결 → [docs/plugin-marketplace.md](docs/plugin-marketplace.md)
 
 ---
 
