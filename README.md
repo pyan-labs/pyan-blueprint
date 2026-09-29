@@ -1,6 +1,11 @@
 # pyan-blueprint
 
-우리 팀의 **Claude/Codex 플러그인 마켓플레이스**입니다. 현재 `db-first` 플러그인을 배포합니다.
+우리 팀의 **Claude/Codex 플러그인 마켓플레이스**입니다. 두 플러그인을 배포합니다.
+
+| 플러그인 | 내용 |
+| --- | --- |
+| `db-first` | MS SQL 스키마를 읽는 MCP 서버(`db-fetcher`) + EF Core 생성 스킬 |
+| `dev-kit` | pyan 개발 팀 공통 스킬 (`commit` 등) → [packages/dev-kit/README.md](packages/dev-kit/README.md) |
 
 ## db-first = db-fetcher
 
@@ -26,6 +31,7 @@ Claude Code 대화창에서:
 ```
 /plugin marketplace add pyan-labs/pyan-blueprint
 /plugin install db-first@pyan-blueprint   # scope를 물어보면 user 선택 권장
+/plugin install dev-kit@pyan-blueprint
 ```
 
 Codex CLI는 터미널에서:
@@ -33,6 +39,7 @@ Codex CLI는 터미널에서:
 ```powershell
 codex plugin marketplace add pyan-labs/pyan-blueprint
 codex plugin add db-first@pyan-blueprint
+codex plugin add dev-kit@pyan-blueprint
 ```
 
 설치하면 db-fetcher가 MCP 서버로 자동 등록됩니다. 업데이트, 제거, 문제 해결 → [docs/plugin-marketplace.md](docs/plugin-marketplace.md)

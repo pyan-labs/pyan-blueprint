@@ -26,6 +26,10 @@ const PLUGINS = {
     packageJson: "packages/db-first/mcp-db-fetcher/package.json",
     indexTs: "packages/db-first/mcp-db-fetcher/src/index.ts",
   },
+  "dev-kit": {
+    plugin: "packages/dev-kit/.claude-plugin/plugin.json",
+    codexPlugin: "packages/dev-kit/.codex-plugin/plugin.json",
+  },
 };
 
 const marketplacePath = resolve(root, ".claude-plugin/marketplace.json");

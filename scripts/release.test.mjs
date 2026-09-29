@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
 const source = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const names = ['db-first'];
+const names = ['db-first', 'dev-kit'];
 function fixture(t) {
   const root = mkdtempSync(join(tmpdir(), 'plugin-release-'));
   t.after(() => {
@@ -111,7 +111,7 @@ test('all-plugin bump synchronizes both host manifests, catalog and MCP metadata
       assert.equal(f.json(`dist/${name}/${host}/plugin.json`).version, '1.0.1');
     }
   }
-  assert.deepEqual(f.json('.claude-plugin/marketplace.json').plugins.map(p => p.version), ['1.0.1']);
+  assert.deepEqual(f.json('.claude-plugin/marketplace.json').plugins.map(p => p.version), names.map(() => '1.0.1'));
   assert.equal(f.json('packages/db-first/mcp-db-fetcher/package.json').version, '1.0.1');
   assert.match(readFileSync(join(f.root, 'packages/db-first/mcp-db-fetcher/src/index.ts'), 'utf8'), /version: "1\.0\.1"/);
 });

@@ -1,6 +1,6 @@
 # Version Bump
 
-Claude/Codex 플러그인 버전을 함께 갱신하는 스크립트. 현재 `db-first`를 지원한다.
+Claude/Codex 플러그인 버전을 함께 갱신하는 스크립트. 현재 `db-first`, `dev-kit`을 지원한다.
 
 ## 사용법
 

@@ -14,6 +14,17 @@
         "installation": "AVAILABLE"
       },
       "category": "Productivity"
+    },
+    {
+      "name": "dev-kit",
+      "source": {
+        "source": "local",
+        "path": "./dist/dev-kit"
+      },
+      "policy": {
+        "installation": "AVAILABLE"
+      },
+      "category": "Productivity"
     }
   ]
 }

@@ -13,6 +13,13 @@
       "version": "1.0.0",
       "path": "db-first",
       "source": "./dist/db-first"
+    },
+    {
+      "name": "dev-kit",
+      "description": "pyan 개발 팀 공통 스킬 모음 (commit 등)",
+      "version": "1.0.0",
+      "path": "dev-kit",
+      "source": "./dist/dev-kit"
     }
   ]
 }

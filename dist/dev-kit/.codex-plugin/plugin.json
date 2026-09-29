@@ -1,0 +1,14 @@
+{
+  "name": "dev-kit",
+  "version": "1.0.0",
+  "description": "pyan 개발 팀 공통 스킬 모음",
+  "author": {
+    "name": "Jay"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Dev Kit",
+    "shortDescription": "pyan 개발 팀 공통 스킬",
+    "category": "Productivity"
+  }
+}
