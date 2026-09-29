@@ -2,9 +2,8 @@
 name: commit
 description: Manual-only. Use ONLY when the user explicitly invokes this skill (Claude `/dev-kit:commit`, Codex `$commit`). Commits the current working-tree changes with a message in the repo's style.
 disable-model-invocation: true
-model: sonnet
-effort: medium
 context: fork
+agent: dev-kit:committer
 ---
 
 # commit — 현재 변경 내용 커밋

@@ -29,6 +29,7 @@ function fixture(t) {
     write(`packages/${name}/skills/example/SKILL.md`, '---\nname: example\ndescription: test\n---\n');
     write(`packages/${name}/skills/_shared/helper.md`, 'support');
   }
+  write('packages/dev-kit/agents/example.md', '---\nname: example\n---\n');
   write('packages/db-first/.mcp.json', '{}');
   write('packages/db-first/.mcp.codex.json', '{}');
   write('packages/db-first/.db-fetcher.example.json', '{}');

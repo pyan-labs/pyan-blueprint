@@ -34,6 +34,8 @@ const PLUGINS = [
       'README.md',
     ],
     skillDirs: ['skills'],
+    // 통째로 복사하는 디렉토리 (skill 전용 agent 등)
+    dirs: ['agents'],
   },
 ];
 
@@ -90,6 +92,12 @@ async function assemble() {
       // skills 복사
       await copySkills(pluginSrc, pluginDist, plugin.skillDirs);
       console.log(`  ✅ skills/`);
+
+      // 추가 디렉토리 복사
+      for (const dir of plugin.dirs ?? []) {
+        await cp(join(pluginSrc, dir), join(pluginDist, dir), { recursive: true });
+        console.log(`  ✅ ${dir}/`);
+      }
     }
     let previousMoved = false;
     try {
