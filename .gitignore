@@ -1,0 +1,5 @@
+node_modules/
+.db-fetcher.json
+.env
+.spec-cycle/
+.worktrees/

@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "db-fetcher": {
+      "command": "node",
+      "args": ["mcp-db-fetcher/dist/index.js"],
+      "cwd": ".",
+      "env": { "DB_FETCHER_REQUIRE_PROJECT_DIR": "1" }
+    }
+  }
+}

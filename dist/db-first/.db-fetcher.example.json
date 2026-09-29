@@ -1,0 +1,26 @@
+{
+  "connections": {
+    "open": "dev",
+    "dev": {
+      "server": "localhost",
+      "port": 1433,
+      "database": "<YOUR_DATABASE>",
+      "authentication": "sql",
+      "user": "sa",
+      "password": "<YOUR_PASSWORD>",
+      "encrypt": true,
+      "trustServerCertificate": true,
+      "readonly": false
+    },
+    "prod": {
+      "server": "<YOUR_SERVER>.database.windows.net",
+      "database": "<YOUR_DATABASE>",
+      "authentication": "sql",
+      "user": "<YOUR_USER>",
+      "password": "<YOUR_PASSWORD>",
+      "encrypt": true,
+      "trustServerCertificate": false,
+      "readonly": true
+    }
+  }
+}

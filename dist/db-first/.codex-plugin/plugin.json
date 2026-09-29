@@ -1,0 +1,15 @@
+{
+  "name": "db-first",
+  "version": "5.7.0",
+  "description": "프로젝트별 MS SQL 스키마를 읽어 EF Core 모델을 생성하는 DB-first 도구",
+  "author": {
+    "name": "Jay"
+  },
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.codex.json",
+  "interface": {
+    "displayName": "DB First",
+    "shortDescription": "프로젝트별 DB 스키마에서 EF Core 모델 생성",
+    "category": "Productivity"
+  }
+}

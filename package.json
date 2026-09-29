@@ -1,0 +1,24 @@
+{
+  "name": "pyan-blueprint",
+  "private": true,
+  "scripts": {
+    "build": "pnpm -r run build",
+    "dist": "pnpm run build && node scripts/assemble-dist.mjs",
+    "lint": "pnpm -r run lint",
+    "dev": "pnpm --filter @pyanllc/mcp-db-fetcher dev",
+    "test:release": "node --test scripts/release.test.mjs",
+    "version:bump": "node scripts/version-bump.mjs"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "esbuild": "^0.23.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.0"
+  },
+  "packageManager": "pnpm@10.32.1+sha512.a706938f0e89ac1456b6563eab4edf1d1faf3368d1191fc5c59790e96dc918e4456ab2e67d613de1043d2e8c81f87303e6b40d4ffeca9df15ef1ad567348f2be"
+}

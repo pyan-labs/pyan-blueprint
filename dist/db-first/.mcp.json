@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "db-fetcher": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/mcp-db-fetcher/dist/index.js"],
+      "env": {}
+    }
+  }
+}

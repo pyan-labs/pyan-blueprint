@@ -1,0 +1,3 @@
+packages:
+  - 'packages/db-first/mcp-*'
+  - 'packages/db-first/skills/*'

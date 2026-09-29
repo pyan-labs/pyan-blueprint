@@ -1,0 +1,19 @@
+{
+  "name": "pyan-blueprint",
+  "interface": {
+    "displayName": "Pyan Blueprint"
+  },
+  "plugins": [
+    {
+      "name": "db-first",
+      "source": {
+        "source": "local",
+        "path": "./dist/db-first"
+      },
+      "policy": {
+        "installation": "AVAILABLE"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
